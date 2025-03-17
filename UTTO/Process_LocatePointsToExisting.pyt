@@ -26,18 +26,17 @@ Requirements:
 Author: Josh Touchstone
 """
 
-
 import arcpy
 from collections import defaultdict
 import os
 
 class Toolbox(object):
     def __init__(self):
-        self.label = "Process_LocatePointsToExisting"
-        self.alias = "locatepointsprocessingtoolbox"
-        self.tools = [LocatePointsTool]
+        self.label = "UTTO Points Toolbox"
+        self.alias = "uttopointstoolbox"
+        self.tools = [UTTOPointsTool]
 
-class LocatePointsTool(object):
+class UTTOPointsTool(object):
     def __init__(self):
         self.label = "Process UTTO Points"
         self.description = "Process UTTO points with configurable categories and validation rules"
