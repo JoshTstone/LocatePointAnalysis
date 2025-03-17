@@ -23,7 +23,7 @@ Requirements:
 - Input point feature class with OverallScore and Positioning fields
 - Input line feature class
 
-Author: Modified by Claude, based on original code
+Author: Josh Touchstone
 """
 
 
