@@ -100,33 +100,35 @@ try:
                     # Remove from append list since it exists
                     records_to_append.remove(project_name)
 
-                    # Check if lat/long changed
-                    old_lat = row[existing_fc_fields.index("Latitude")]
-                    old_long = row[existing_fc_fields.index("Longitude")]
-                    new_lat = new_data[project_name]["Latitude"]
-                    new_long = new_data[project_name]["Longitude"]
+                    # Check if any field has changed
+                    fields_changed = False
+                    for field in existing_fc_fields:
+                        if field in new_layer_fields and new_data[project_name][field] != row[existing_fc_fields.index(field)]:
+                            fields_changed = True
+                            break
 
-                    if old_lat != new_lat or old_long != new_long:
+                    if fields_changed:
                         records_to_delete.append(project_name)
-                        print(f"\nLocation change detected for {project_name}:")
-                        print(f"  Old Location: Lat {old_lat}, Long {old_long}")
-                        print(f"  New Location: Lat {new_lat}, Long {new_long}")
+                        print(f"\nChanges detected for {project_name}:")
+                        for field in existing_fc_fields:
+                            if field in new_layer_fields and new_data[project_name][field] != row[existing_fc_fields.index(field)]:
+                                print(f"  Field {field} changed from {row[existing_fc_fields.index(field)]} to {new_data[project_name][field]}")
                         print("  Record will be deleted and re-appended")
 
-        # Delete records where location changed
+        # Delete records where any field changed
         if records_to_delete:
-            print("\nDeleting records with changed locations...")
+            print("\nDeleting records with changed fields...")
             with arcpy.da.UpdateCursor(existing_fc, ["PROJECT_NAME"]) as cursor:
                 for row in cursor:
                     if row[0] in records_to_delete:
                         cursor.deleteRow()
                         print(f"Deleted record: {row[0]}")
 
-        # Append records (both new and location-changed)
-        records_to_append.extend(records_to_delete)  # Add location-changed records to append list
+        # Append records (both new and changed)
+        records_to_append.extend(records_to_delete)  # Add changed records to append list
 
         if records_to_append:
-            print("\nAppending new records and location-changed records...")
+            print("\nAppending new records and changed records...")
             # Create temporary feature layer for appending
             temp_layer = "temp_append_layer"
             arcpy.management.MakeFeatureLayer(new_layer_path, temp_layer)
@@ -150,7 +152,7 @@ try:
         edit.stopEditing(True)
 
         print(f"\nUpdate process complete!")
-        print(f"Records deleted due to location change: {len(records_to_delete)}")
+        print(f"Records deleted due to changes: {len(records_to_delete)}")
         print(f"Total records appended: {len(records_to_append)}")
 
     except Exception as e:
